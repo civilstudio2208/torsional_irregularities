@@ -17,7 +17,7 @@
             max-width: 800px;
             margin: 0 auto;
         }
-        .input-section, .result-section, .constant-section {
+        .input-section, .result-section {
             margin-bottom: 20px;
             padding: 15px;
             border: 1px solid #ddd;
@@ -25,10 +25,10 @@
         }
         label {
             display: inline-block;
-            width: 200px;
+            width: 250px;
             margin: 10px 0;
         }
-        input {
+        input, select {
             padding: 5px;
             width: 150px;
         }
@@ -47,9 +47,6 @@
             background-color: #e8f4f8;
             display: none;
         }
-        .constant-section {
-            background-color: #f9ebeb;
-        }
         .highlight {
             font-weight: bold;
             color: #e74c3c;
@@ -60,18 +57,36 @@
     <div class="container">
         <h1>Torsional Irregularity Check - IS 1893:2016</h1>
 
-        <div class="constant-section">
-            <h2>Constant Data</h2>
-            <p>Plan Dimensions: 30m (X) × 40m (Y)</p>
-            <p>Height: 45m (15 stories, 3m/story)</p>
-            <p>Seismic Zone: Zone III (Z = 0.16)</p>
-            <p>Structural System: RC Frame with Shear Walls</p>
-        </div>
-
         <div class="input-section">
-            <h2>Variable Input</h2>
+            <h2>Input Parameters</h2>
+            <label>Plan Dimension X (m):</label>
+            <input type="number" id="dimX" value="30" step="0.1"><br>
+
+            <label>Plan Dimension Y (m):</label>
+            <input type="number" id="dimY" value="40" step="0.1"><br>
+
+            <label>Total Height (m):</label>
+            <input type="number" id="height" value="45" step="0.1"><br>
+
+            <label>Number of Stories:</label>
+            <input type="number" id="stories" value="15" step="1"><br>
+
+            <label>Story Height (m):</label>
+            <input type="number" id="storyHeight" value="3" step="0.1"><br>
+
+            <label>Seismic Zone:</label>
+            <select id="zone">
+                <option value="0.10">Zone II (Z = 0.10)</option>
+                <option value="0.16" selected>Zone III (Z = 0.16)</option>
+                <option value="0.24">Zone IV (Z = 0.24)</option>
+                <option value="0.36">Zone V (Z = 0.36)</option>
+            </select><br>
+
             <label>Shear Wall Eccentricity Y (m):</label>
             <input type="number" id="eccY" value="5" step="0.1"><br>
+
+            <p><strong>Structural System:</strong> RC Frame with Shear Walls</p>
+
             <button onclick="calculateTorsion()">Calculate</button>
         </div>
 
@@ -88,20 +103,24 @@
 
     <script>
         function calculateTorsion() {
-            // Constant Data
-            const dimX = 30;        // Plan Dimension X (m)
-            const dimY = 40;        // Plan Dimension Y (m)
-            const height = 45;      // Height (m)
-            const stories = 15;     // Number of Stories
-            const zone = 0.16;      // Zone III
-
-            // Variable Input
+            // Get input values
+            const dimX = parseFloat(document.getElementById('dimX').value);
+            const dimY = parseFloat(document.getElementById('dimY').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const stories = parseInt(document.getElementById('stories').value);
+            const storyHeight = parseFloat(document.getElementById('storyHeight').value);
+            const zone = parseFloat(document.getElementById('zone').value);
             const eccY = parseFloat(document.getElementById('eccY').value);
 
-            // Constants for Calculation
-            const I = 1.0;          // Importance Factor
-            const R = 5;            // Response Reduction Factor
-            const soilType = 2.5;   // S_a/g for medium soil, T < 0.67s
+            // Validate height consistency
+            if (Math.abs(height - stories * storyHeight) > 0.1) {
+                alert("Warning: Total height does not match stories × story height!");
+            }
+
+            // Constants
+            const I = 1.0; // Importance Factor
+            const R = 5;   // Response Reduction Factor
+            const soilType = 2.5; // S_a/g for medium soil, T < 0.67s
             const weightPerFloor = 10 * dimX * dimY; // 10 kN/m²
             const totalWeight = weightPerFloor * stories;
 
@@ -112,7 +131,7 @@
             // Base Shear
             const baseShear = Ah * totalWeight;
             const topFloorForce = baseShear * (weightPerFloor * height * height) / 
-                                 (weightPerFloor * stories * (height / stories) * (height / stories) * stories);
+                                 (weightPerFloor * stories * storyHeight * storyHeight * stories);
 
             // Accidental Eccentricity (Y-direction force)
             const accEcc = 0.05 * dimX;

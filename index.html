@@ -6,108 +6,107 @@
     <title>Torsional Irregularity Check</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            font-family: 'Poppins', sans-serif;
+            background: #f4f4f9;
+            color: #333;
             margin: 0;
-            padding: 0;
+            padding: 2rem;
         }
-        header {
-            background-color: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 1rem;
-        }
-        section {
+        .container {
             max-width: 900px;
-            margin: 2rem auto;
+            margin: auto;
             background: white;
             padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
-        h2 {
-            color: #2c3e50;
-        }
-        label {
-            display: block;
-            margin-top: 1rem;
-            font-weight: bold;
+        h1, h2 {
+            color: #444;
         }
         input, select {
             width: 100%;
-            padding: 0.5rem;
-            margin-top: 0.5rem;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
         }
-        button {
-            margin-top: 1.5rem;
-            background-color: #2980b9;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            cursor: pointer;
-        }
-        .result {
-            margin-top: 1.5rem;
-            font-size: 1.2rem;
-            font-weight: bold;
+        .output {
+            background: #eef2f7;
+            padding: 1rem;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
+<div class="container">
+    <h1>Torsional Irregularity Check</h1>
 
-<header>
-    <h1>Torsional Irregularity Check - IS 1893:2016</h1>
-</header>
+    <label>Length (X-direction) in m:</label>
+    <input type="number" id="length" value="30" oninput="updateResults()">
 
-<section>
-    <h2>Step 1: Enter Building Details</h2>
-    <label>Plan Dimension X-direction (m):</label>
-    <input type="number" id="lengthX" value="30">
+    <label>Width (Y-direction) in m:</label>
+    <input type="number" id="width" value="40" oninput="updateResults()">
 
-    <label>Plan Dimension Y-direction (m):</label>
-    <input type="number" id="lengthY" value="40">
+    <label>No. of Storeys:</label>
+    <input type="number" id="storeys" value="15" oninput="updateResults()">
 
-    <label>Height of Building (m):</label>
-    <input type="number" id="height" value="45">
+    <label>Seismic Zone (II/III/IV/V):</label>
+    <select id="zone" onchange="updateResults()">
+        <option value="II">II</option>
+        <option value="III" selected>III</option>
+        <option value="IV">IV</option>
+        <option value="V">V</option>
+    </select>
 
-    <h2>Step 2: Enter Displacement Data</h2>
-    <label>Displacement at End 1 (mm):</label>
-    <input type="number" id="disp1">
-
-    <label>Displacement at End 2 (mm):</label>
-    <input type="number" id="disp2">
-
-    <button onclick="calculateIrregularity()">Check Torsional Irregularity</button>
-
-    <div class="result" id="result"></div>
-</section>
+    <div class="output" id="result"></div>
+</div>
 
 <script>
-    function calculateIrregularity() {
-        var d1 = parseFloat(document.getElementById('disp1').value);
-        var d2 = parseFloat(document.getElementById('disp2').value);
+function updateResults() {
+    const length = parseFloat(document.getElementById('length').value);
+    const width = parseFloat(document.getElementById('width').value);
+    const storeys = parseInt(document.getElementById('storeys').value);
+    const zone = document.getElementById('zone').value;
 
-        if(isNaN(d1) || isNaN(d2)) {
-            alert('Please enter both displacement values.');
-            return;
-        }
+    const height = storeys * 3;
+    const accEccX = (0.05 * width).toFixed(2);
+    const accEccY = (0.05 * length).toFixed(2);
 
-        var dmax = Math.max(d1, d2);
-        var davg = (d1 + d2) / 2;
-        var ratio = (dmax / davg).toFixed(2);
-
-        var resultText = 'Δmax / Δavg = ' + ratio + '\n';
-
-        if (ratio > 1.4) {
-            resultText += 'Extreme Torsional Irregularity Exists.';
-        } else if (ratio > 1.2) {
-            resultText += 'Torsional Irregularity Exists.';
-        } else {
-            resultText += 'No Torsional Irregularity.';
-        }
-
-        document.getElementById('result').innerText = resultText;
+    let baseShearFactor;
+    switch(zone) {
+        case 'II': baseShearFactor = 0.04; break;
+        case 'III': baseShearFactor = 0.06; break;
+        case 'IV': baseShearFactor = 0.08; break;
+        case 'V': baseShearFactor = 0.12; break;
     }
+
+    const resultDiv = document.getElementById('result');
+
+    resultDiv.innerHTML = `
+        <h2>Building Details</h2>
+        Length = ${length} m <br>
+        Width = ${width} m <br>
+        Height = ${height} m (Storeys: ${storeys}) <br>
+
+        <h2>Seismic Parameters</h2>
+        Seismic Zone = ${zone}<br>
+        Approximate Base Shear Factor = ${baseShearFactor}<br>
+
+        <h2>Accidental Eccentricity</h2>
+        X-direction = ±${accEccX} m <br>
+        Y-direction = ±${accEccY} m <br>
+
+        <h2>Check for Torsional Irregularity</h2>
+        Displacement Ratio Criteria: If Δ_max / Δ_avg > 1.2 → Torsional Irregularity Exists <br>
+        If >1.4 → Extreme Irregularity<br>
+
+        Perform ETABS/STAAD Analysis with above parameters.
+    `;
+}
+
+updateResults();
 </script>
 
 </body>

@@ -112,56 +112,9 @@
             const zone = parseFloat(document.getElementById('zone').value);
             const eccY = parseFloat(document.getElementById('eccY').value);
 
-            // Validate height consistency
-            if (Math.abs(height - stories * storyHeight) > 0.1) {
-                alert("Warning: Total height does not match stories × story height!");
+            // Input validation
+            if (isNaN(dimX) || isNaN(dimY) || isNaN(height) || isNaN(stories) || isNaN(storyHeight) || isNaN(eccY)) {
+                alert("Please fill in all fields with valid numbers.");
+                return;
             }
-
-            // Constants
-            const I = 1.0; // Importance Factor
-            const R = 5;   // Response Reduction Factor
-            const soilType = 2.5; // S_a/g for medium soil, T < 0.67s
-            const weightPerFloor = 10 * dimX * dimY; // 10 kN/m²
-            const totalWeight = weightPerFloor * stories;
-
-            // Time Period (Clause 7.6.2)
-            const T = 0.09 * height / Math.sqrt(Math.min(dimX, dimY));
-            const Ah = (zone / 2) * (I / R) * (T < 0.67 ? soilType : 1.0 / T);
-
-            // Base Shear
-            const baseShear = Ah * totalWeight;
-            const topFloorForce = baseShear * (weightPerFloor * height * height) / 
-                                 (weightPerFloor * stories * storyHeight * storyHeight * stories);
-
-            // Accidental Eccentricity (Y-direction force)
-            const accEcc = 0.05 * dimX;
-            const designEcc = 1.5 * eccY + accEcc;
-
-            // Simplified Displacement (assuming stiffness k = 3000 kN/m)
-            const k = 3000; // Approximate stiffness
-            const directDisp = (topFloorForce / k) * 100; // Convert to cm
-            const torsionMoment = topFloorForce * designEcc;
-            const J = k * (dimX * dimX / 4); // Simplified torsional stiffness
-            const theta = torsionMoment / J;
-
-            const delta1 = directDisp + (theta * (dimX / 2) * 100);
-            const delta2 = directDisp - (theta * (dimX / 2) * 100);
-            const deltaMax = Math.max(delta1, delta2);
-            const deltaAvg = (delta1 + delta2) / 2;
-            const ratio = deltaMax / deltaAvg;
-
-            // Display Results
-            document.getElementById('baseShear').textContent = baseShear.toFixed(2);
-            document.getElementById('designEcc').textContent = designEcc.toFixed(2);
-            document.getElementById('deltaMax').textContent = deltaMax.toFixed(2);
-            document.getElementById('deltaAvg').textContent = deltaAvg.toFixed(2);
-            document.getElementById('ratio').textContent = ratio.toFixed(2);
-            document.getElementById('conclusion').textContent = 
-                ratio > 1.2 ? (ratio > 1.4 ? "Extreme Torsional Irregularity" : "Torsional Irregularity Exists") 
-                            : "No Torsional Irregularity";
-
-            document.getElementById('results').style.display = 'block';
-        }
-    </script>
-</body>
-</html>
+            if (dimX <= 0 || dimY <= 0 || height <= 0 || stories <= 0 || storyHeight <= 0) {

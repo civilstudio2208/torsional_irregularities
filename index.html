@@ -1,74 +1,76 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Torsional Irregularity Checker - IS 1893:2016</title>
-<style>
-  body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; margin: 0; padding: 2rem; color: #333; }
-  .container { max-width: 1200px; margin: auto; }
-  h1 { font-size: 2.5rem; margin-bottom: 1rem; color: #2c3e50; }
-  .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-  input, select { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
-  .result { background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-  .highlight { color: #e74c3c; font-weight: bold; }
-</style>
-</head>
-<body>
-<div class="container">
-  <h1>Torsional Irregularity Check (IS 1893:2016)</h1>
-  
-  <div class="input-grid">
-    <input type="number" id="length" placeholder="Length in X-direction (m)" oninput="calculate()">
-    <input type="number" id="width" placeholder="Width in Y-direction (m)" oninput="calculate()">
-    <input type="number" id="height" placeholder="Total Height (m)" oninput="calculate()">
-    <input type="number" id="floors" placeholder="Number of Floors" oninput="calculate()">
-    <input type="number" id="zone" placeholder="Seismic Zone (II-IV)" oninput="calculate()">
-    <input type="number" id="soil" placeholder="Soil Type (1,2,3)" oninput="calculate()">
-  </div>
+// React code structure for Dynamic Plan Irregularity Check Website
 
-  <div class="result" id="output"></div>
+import { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-</div>
+export default function IrregularityChecker() {
+  const [input, setInput] = useState({
+    length: 30,
+    width: 40,
+    height: 45,
+    floors: 15,
+    seismicZone: 'III',
+    soilType: 'II',
+    massDistribution: 'Uniform',
+    stiffness: 'Symmetric'
+  });
 
-<script>
-function calculate() {
-  const l = parseFloat(document.getElementById('length').value) || 0;
-  const w = parseFloat(document.getElementById('width').value) || 0;
-  const h = parseFloat(document.getElementById('height').value) || 0;
-  const f = parseFloat(document.getElementById('floors').value) || 0;
-  const z = parseFloat(document.getElementById('zone').value) || 0;
-  const s = parseFloat(document.getElementById('soil').value) || 0;
+  const [results, setResults] = useState({});
 
-  if (l && w && h && f && z && s) {
-    const biX = w; // Perpendicular to X
-    const biY = l; // Perpendicular to Y
+  useEffect(() => {
+    calculateResults();
+  }, [input]);
 
-    const accX = (0.05 * biX).toFixed(2);
-    const accY = (0.05 * biY).toFixed(2);
+  const calculateResults = () => {
+    const bX = input.width;
+    const bY = input.length;
+    const eccX = 0.05 * bX;
+    const eccY = 0.05 * bY;
 
-    let resultHTML = `
-      <h2>Stepwise Calculation:</h2>
-      <p><strong>Step 1:</strong> Define Structure - Plan = ${l}m x ${w}m, Height = ${h}m, Floors = ${f}</p>
-      <p><strong>Step 2:</strong> Seismic Loading - Zone = ${z}, Soil Type = ${s}</p>
-      <p><strong>Step 3:</strong> Accidental Eccentricity</p>
-      <ul>
-        <li>X-Direction = ±${accX}m</li>
-        <li>Y-Direction = ±${accY}m</li>
-      </ul>
-      <p><strong>Step 4:</strong> Perform Displacement Analysis using structural software.</p>
-      <p><strong>Step 5:</strong> Check for Torsional Irregularity as per IS 1893:2016:</p>
-      <ul>
-        <li>If Displacement Ratio Δ_max / Δ_avg > 1.2 ⇒ <span class="highlight">Torsional Irregularity Exists</span></li>
-        <li>If > 1.4 ⇒ <span class="highlight">Extreme Torsional Irregularity</span></li>
-      </ul>
-      <p><strong>Step 6:</strong> If Irregularity Exists → Perform Dynamic Analysis (Response Spectrum / Time History).</p>
-    `;
+    const torsionCheck = {
+      directionX: eccX,
+      directionY: eccY,
+      remark: eccX > 1.2 ? 'Torsional Irregularity' : 'Regular'
+    };
 
-    document.getElementById('output').innerHTML = resultHTML;
-  }
+    setResults({
+      torsionCheck,
+      // Other checks can be similarly added here
+    });
+  };
+
+  return (
+    <div className="grid gap-6 p-8">
+      <Card>
+        <CardContent className="grid gap-4">
+          <Label>Length (m)</Label>
+          <Input
+            type="number"
+            value={input.length}
+            onChange={(e) => setInput({ ...input, length: +e.target.value })}
+          />
+
+          <Label>Width (m)</Label>
+          <Input
+            type="number"
+            value={input.width}
+            onChange={(e) => setInput({ ...input, width: +e.target.value })}
+          />
+
+          {/* Add all other input fields similarly */}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <h2 className="text-xl font-bold mb-4">Torsional Irregularity Check</h2>
+          <p>Accidental Eccentricity in X = {results.torsionCheck?.directionX} m</p>
+          <p>Accidental Eccentricity in Y = {results.torsionCheck?.directionY} m</p>
+          <p>Remark: {results.torsionCheck?.remark}</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
-</script>
-
-</body>
-</html>

@@ -17,7 +17,7 @@
             max-width: 800px;
             margin: 0 auto;
         }
-        .input-section, .result-section {
+        .input-section, .result-section, .constant-section {
             margin-bottom: 20px;
             padding: 15px;
             border: 1px solid #ddd;
@@ -28,7 +28,7 @@
             width: 200px;
             margin: 10px 0;
         }
-        input, select {
+        input {
             padding: 5px;
             width: 150px;
         }
@@ -47,6 +47,9 @@
             background-color: #e8f4f8;
             display: none;
         }
+        .constant-section {
+            background-color: #f9ebeb;
+        }
         .highlight {
             font-weight: bold;
             color: #e74c3c;
@@ -57,31 +60,18 @@
     <div class="container">
         <h1>Torsional Irregularity Check - IS 1893:2016</h1>
 
+        <div class="constant-section">
+            <h2>Constant Data</h2>
+            <p>Plan Dimensions: 30m (X) × 40m (Y)</p>
+            <p>Height: 45m (15 stories, 3m/story)</p>
+            <p>Seismic Zone: Zone III (Z = 0.16)</p>
+            <p>Structural System: RC Frame with Shear Walls</p>
+        </div>
+
         <div class="input-section">
-            <h2>Input Parameters</h2>
-            <label>Plan Dimension X (m):</label>
-            <input type="number" id="dimX" value="30" step="0.1"><br>
-
-            <label>Plan Dimension Y (m):</label>
-            <input type="number" id="dimY" value="40" step="0.1"><br>
-
-            <label>Height (m):</label>
-            <input type="number" id="height" value="45" step="0.1"><br>
-
-            <label>Number of Stories:</label>
-            <input type="number" id="stories" value="15" step="1"><br>
-
-            <label>Seismic Zone:</label>
-            <select id="zone">
-                <option value="0.10">Zone II (Z = 0.10)</option>
-                <option value="0.16" selected>Zone III (Z = 0.16)</option>
-                <option value="0.24">Zone IV (Z = 0.24)</option>
-                <option value="0.36">Zone V (Z = 0.36)</option>
-            </select><br>
-
+            <h2>Variable Input</h2>
             <label>Shear Wall Eccentricity Y (m):</label>
             <input type="number" id="eccY" value="5" step="0.1"><br>
-
             <button onclick="calculateTorsion()">Calculate</button>
         </div>
 
@@ -98,18 +88,20 @@
 
     <script>
         function calculateTorsion() {
-            // Get input values
-            const dimX = parseFloat(document.getElementById('dimX').value);
-            const dimY = parseFloat(document.getElementById('dimY').value);
-            const height = parseFloat(document.getElementById('height').value);
-            const stories = parseInt(document.getElementById('stories').value);
-            const zone = parseFloat(document.getElementById('zone').value);
+            // Constant Data
+            const dimX = 30;        // Plan Dimension X (m)
+            const dimY = 40;        // Plan Dimension Y (m)
+            const height = 45;      // Height (m)
+            const stories = 15;     // Number of Stories
+            const zone = 0.16;      // Zone III
+
+            // Variable Input
             const eccY = parseFloat(document.getElementById('eccY').value);
 
-            // Constants
-            const I = 1.0; // Importance Factor
-            const R = 5;   // Response Reduction Factor
-            const soilType = 2.5; // S_a/g for medium soil, T < 0.67s
+            // Constants for Calculation
+            const I = 1.0;          // Importance Factor
+            const R = 5;            // Response Reduction Factor
+            const soilType = 2.5;   // S_a/g for medium soil, T < 0.67s
             const weightPerFloor = 10 * dimX * dimY; // 10 kN/m²
             const totalWeight = weightPerFloor * stories;
 
@@ -122,13 +114,13 @@
             const topFloorForce = baseShear * (weightPerFloor * height * height) / 
                                  (weightPerFloor * stories * (height / stories) * (height / stories) * stories);
 
-            // Accidental Eccentricity
-            const accEcc = 0.05 * dimX; // For Y-direction force
+            // Accidental Eccentricity (Y-direction force)
+            const accEcc = 0.05 * dimX;
             const designEcc = 1.5 * eccY + accEcc;
 
-            // Simplified Displacement (假设 stiffness k = 3000 kN/m)
+            // Simplified Displacement (assuming stiffness k = 3000 kN/m)
             const k = 3000; // Approximate stiffness
-            const directDisp = (topFloorForce / k) * 100; // cm
+            const directDisp = (topFloorForce / k) * 100; // Convert to cm
             const torsionMoment = topFloorForce * designEcc;
             const J = k * (dimX * dimX / 4); // Simplified torsional stiffness
             const theta = torsionMoment / J;

@@ -7,50 +7,107 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
         }
-        label, input, button {
+        header {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+        section {
+            max-width: 900px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2c3e50;
+        }
+        label {
             display: block;
-            margin-bottom: 10px;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        button {
+            margin-top: 1.5rem;
+            background-color: #2980b9;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-<h2>Torsional Irregularity Check as per IS 1893:2016</h2>
+<header>
+    <h1>Torsional Irregularity Check - IS 1893:2016</h1>
+</header>
 
-<form id="inputForm">
-    <label>Length in X-direction (m): <input type="number" step="any" id="lengthX" value="30"></label>
-    <label>Length in Y-direction (m): <input type="number" step="any" id="lengthY" value="40"></label>
-    <label>Height (m): <input type="number" step="any" id="height" value="45"></label>
-    <label>Displacement at one end (mm): <input type="number" step="any" id="disp1"></label>
-    <label>Displacement at other end (mm): <input type="number" step="any" id="disp2"></label>
-    <button type="button" onclick="checkIrregularity()">Check Torsional Irregularity</button>
-</form>
+<section>
+    <h2>Step 1: Enter Building Details</h2>
+    <label>Plan Dimension X-direction (m):</label>
+    <input type="number" id="lengthX" value="30">
 
-<h3 id="result"></h3>
+    <label>Plan Dimension Y-direction (m):</label>
+    <input type="number" id="lengthY" value="40">
+
+    <label>Height of Building (m):</label>
+    <input type="number" id="height" value="45">
+
+    <h2>Step 2: Enter Displacement Data</h2>
+    <label>Displacement at End 1 (mm):</label>
+    <input type="number" id="disp1">
+
+    <label>Displacement at End 2 (mm):</label>
+    <input type="number" id="disp2">
+
+    <button onclick="calculateIrregularity()">Check Torsional Irregularity</button>
+
+    <div class="result" id="result"></div>
+</section>
 
 <script>
-function checkIrregularity() {
-    const disp1 = parseFloat(document.getElementById('disp1').value);
-    const disp2 = parseFloat(document.getElementById('disp2').value);
+    function calculateIrregularity() {
+        var d1 = parseFloat(document.getElementById('disp1').value);
+        var d2 = parseFloat(document.getElementById('disp2').value);
 
-    const deltaMax = Math.max(disp1, disp2);
-    const deltaAvg = (disp1 + disp2) / 2;
-    const ratio = deltaMax / deltaAvg;
+        if(isNaN(d1) || isNaN(d2)) {
+            alert('Please enter both displacement values.');
+            return;
+        }
 
-    let message = `Δmax = ${deltaMax} mm, Δavg = ${deltaAvg.toFixed(2)} mm, Ratio = ${ratio.toFixed(2)}<br>`;
+        var dmax = Math.max(d1, d2);
+        var davg = (d1 + d2) / 2;
+        var ratio = (dmax / davg).toFixed(2);
 
-    if (ratio > 1.4) {
-        message += "Result: Extreme Torsional Irregularity Exists (Ratio > 1.4)";
-    } else if (ratio > 1.2) {
-        message += "Result: Torsional Irregularity Exists (Ratio > 1.2)";
-    } else {
-        message += "Result: No Torsional Irregularity (Ratio ≤ 1.2)";
+        var resultText = 'Δmax / Δavg = ' + ratio + '\n';
+
+        if (ratio > 1.4) {
+            resultText += 'Extreme Torsional Irregularity Exists.';
+        } else if (ratio > 1.2) {
+            resultText += 'Torsional Irregularity Exists.';
+        } else {
+            resultText += 'No Torsional Irregularity.';
+        }
+
+        document.getElementById('result').innerText = resultText;
     }
-
-    document.getElementById('result').innerHTML = message;
-}
 </script>
 
 </body>

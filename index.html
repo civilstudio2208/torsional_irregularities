@@ -1,64 +1,118 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torsional Irregularity Check - IS 1893:2016</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 2rem;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .output {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Torsional Irregularity Check (IS 1893:2016)</h1>
 
-export default function TorsionalIrregularityChecker() {
-  const [length, setLength] = useState(30);
-  const [width, setWidth] = useState(40);
-  const [height, setHeight] = useState(45);
-  const [zone, setZone] = useState(3);
-  const [soilType, setSoilType] = useState('II');
-  const [displacements, setDisplacements] = useState({ d1: 10, d2: 14 });
-
-  const bX = width;
-  const bY = length;
-
-  const accEccX = 0.05 * bX;
-  const accEccY = 0.05 * bY;
-
-  const deltaMax = Math.max(displacements.d1, displacements.d2);
-  const deltaAvg = (displacements.d1 + displacements.d2) / 2;
-
-  const torsionRatio = (deltaMax / deltaAvg).toFixed(2);
-
-  const irregularityStatus = torsionRatio > 1.4 ? 'Extreme Torsional Irregularity' : torsionRatio > 1.2 ? 'Torsional Irregularity' : 'No Irregularity';
-
-  return (
-    <div className="grid gap-6 p-4">
-      <h1 className="text-3xl font-bold text-center">Torsional Irregularity Check</h1>
-
-      <Card>
-        <CardContent className="grid gap-4 p-4">
-          <Label>Length (X-direction) [m]</Label>
-          <Input type="number" value={length} onChange={(e) => setLength(+e.target.value)} />
-
-          <Label>Width (Y-direction) [m]</Label>
-          <Input type="number" value={width} onChange={(e) => setWidth(+e.target.value)} />
-
-          <Label>Height [m]</Label>
-          <Input type="number" value={height} onChange={(e) => setHeight(+e.target.value)} />
-
-          <Label>Seismic Zone (II to V)</Label>
-          <Input type="number" value={zone} onChange={(e) => setZone(+e.target.value)} />
-
-          <Label>Soil Type (I / II / III)</Label>
-          <Input value={soilType} onChange={(e) => setSoilType(e.target.value)} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="grid gap-4 p-4">
-          <h2 className="text-xl font-semibold">Stepwise Output:</h2>
-          <p>Accidental Eccentricity X: ±{accEccX} m</p>
-          <p>Accidental Eccentricity Y: ±{accEccY} m</p>
-
-          <p>Maximum Displacement: {deltaMax} mm</p>
-          <p>Average Displacement: {deltaAvg} mm</p>
-          <p>Torsion Ratio: {torsionRatio}</p>
-          <p className="font-bold text-lg">Status: {irregularityStatus}</p>
-        </CardContent>
-      </Card>
+    <div class="input-group">
+        <label for="length">Length (X-direction) in m:</label>
+        <input type="number" id="length" value="30" oninput="updateOutput()">
     </div>
-  );
+
+    <div class="input-group">
+        <label for="width">Width (Y-direction) in m:</label>
+        <input type="number" id="width" value="40" oninput="updateOutput()">
+    </div>
+
+    <div class="input-group">
+        <label for="height">Building Height in m:</label>
+        <input type="number" id="height" value="45" oninput="updateOutput()">
+    </div>
+
+    <div class="input-group">
+        <label for="zone">Seismic Zone (II/III/IV/V):</label>
+        <input type="text" id="zone" value="III" oninput="updateOutput()">
+    </div>
+
+    <div class="input-group">
+        <label for="soil">Soil Type (I/II/III):</label>
+        <input type="text" id="soil" value="II" oninput="updateOutput()">
+    </div>
+
+    <div class="output" id="outputBox">
+        <h2>Calculation Steps:</h2>
+        <div id="steps"></div>
+    </div>
+</div>
+
+<script>
+function updateOutput() {
+    const length = parseFloat(document.getElementById('length').value);
+    const width = parseFloat(document.getElementById('width').value);
+    const height = parseFloat(document.getElementById('height').value);
+
+    const biX = width;
+    const biY = length;
+
+    const accEccX = 0.05 * biX;
+    const accEccY = 0.05 * biY;
+
+    let stepsHTML = `
+        <p><strong>Step 1: Define the Structure</strong></p>
+        <p>Plan Dimensions: ${length}m x ${width}m</p>
+        <p>Height: ${height}m</p>
+
+        <p><strong>Step 2: Accidental Eccentricity</strong></p>
+        <p>X-direction Accidental Eccentricity: ±${accEccX.toFixed(2)}m</p>
+        <p>Y-direction Accidental Eccentricity: ±${accEccY.toFixed(2)}m</p>
+
+        <p><strong>Step 3: Torsional Irregularity Check</strong></p>
+        <p>For detailed displacement analysis, input values to ETABS or relevant software.</p>
+        <p>Compare Δ_max / Δ_avg for each floor:</p>
+        <ul>
+            <li>&lt; 1.2 → Regular</li>
+            <li>1.2 - 1.4 → Torsional Irregularity</li>
+            <li>&gt; 1.4 → Extreme Irregularity</li>
+        </ul>
+    `;
+
+    document.getElementById('steps').innerHTML = stepsHTML;
 }
+
+updateOutput();
+</script>
+
+</body>
+</html>

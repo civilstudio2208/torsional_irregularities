@@ -1,1 +1,0 @@
-# torsional_irregularities

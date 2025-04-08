@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torsional Irregularity Check - IS 1893:2016</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .result {
+            background-color: #e8f4f8;
+            padding: 10px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Torsional Irregularity Check as per IS 1893 (Part 1): 2016</h1>
+    
+    <div class="section">
+        <h2>Problem Statement</h2>
+        <p>Perform a torsional irregularity check for a building with the following details:</p>
+        <ul>
+            <li><strong>Plan Dimensions:</strong> 30m (X) × 40m (Y)</li>
+            <li><strong>Height:</strong> 45m (15 stories, 3m/story)</li>
+            <li><strong>Seismic Zone:</strong> Zone III</li>
+            <li><strong>Structural System:</strong> RC Frame with Shear Walls</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Assumptions</h2>
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Column Size</td>
+                <td>600mm × 600mm, 6m spacing</td>
+            </tr>
+            <tr>
+                <td>Shear Walls</td>
+                <td>Wall 1: (6m, 0-6m), Wall 2: (24m, 34-40m), 6m long, 300mm thick</td>
+            </tr>
+            <tr>
+                <td>Seismic Weight/Floor</td>
+                <td>12,000 kN</td>
+            </tr>
+            <tr>
+                <td>Soil Type</td>
+                <td>Type II (Medium)</td>
+            </tr>
+            <tr>
+                <td>Importance Factor (I)</td>
+                <td>1.0</td>
+            </tr>
+            <tr>
+                <td>Response Reduction Factor (R)</td>
+                <td>5</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Calculations</h2>
+        <h3>Step 1: Centers of Mass and Rigidity</h3>
+        <p>CM: (15m, 20m), CR: (15m, 25m), e_sy = -5m (Y-direction).</p>
+
+        <h3>Step 2: Seismic Base Shear</h3>
+        <p>Z = 0.16, T_y = 0.64s, S_a/g = 2.5, A_h = 0.04, V_B = 7,200 kN.</p>
+
+        <h3>Step 3: Accidental Eccentricity</h3>
+        <p>Y-direction: e_dy = -6m (1.5 × -5 + 1.5).</p>
+
+        <h3>Step 4: Displacement Analysis (Top Floor)</h3>
+        <ul>
+            <li>Force: 960 kN (Y-direction)</li>
+            <li>Torsional Moment: 5,760 kNm</li>
+            <li>Rotation (θ): 0.00524 rad</li>
+            <li>Displacements: 
+                <ul>
+                    <li>X = 0m: 40.2cm</li>
+                    <li>X = 30m: 24.6cm</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Step 5: Torsional Irregularity Check</h3>
+        <p>Δ_max = 40.2cm, Δ_avg = 32.4cm, Ratio = 1.24.</p>
+    </div>
+
+    <div class="section result">
+        <h2>Result</h2>
+        <p>Δ_max / Δ_avg = 1.24 > 1.2 → <strong>Torsional Irregularity Exists</strong>.</p>
+        <p>Recommendation: Perform dynamic analysis per Clause 7.7.</p>
+    </div>
+
+</body>
+</html>

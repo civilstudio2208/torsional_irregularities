@@ -1,117 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Torsional Irregularity Check - IS 1893:2016</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            padding: 2rem;
-        }
-        h1, h2 {
-            color: #2c3e50;
-        }
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-        input {
-            width: 100%;
-            padding: 0.5rem;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        .output {
-            background: #fff;
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            margin-top: 2rem;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Torsional Irregularity Checker - IS 1893:2016</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; margin: 0; padding: 2rem; color: #333; }
+  .container { max-width: 1200px; margin: auto; }
+  h1 { font-size: 2.5rem; margin-bottom: 1rem; color: #2c3e50; }
+  .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  input, select { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+  .result { background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+  .highlight { color: #e74c3c; font-weight: bold; }
+</style>
 </head>
 <body>
 <div class="container">
-    <h1>Torsional Irregularity Check (IS 1893:2016)</h1>
+  <h1>Torsional Irregularity Check (IS 1893:2016)</h1>
+  
+  <div class="input-grid">
+    <input type="number" id="length" placeholder="Length in X-direction (m)" oninput="calculate()">
+    <input type="number" id="width" placeholder="Width in Y-direction (m)" oninput="calculate()">
+    <input type="number" id="height" placeholder="Total Height (m)" oninput="calculate()">
+    <input type="number" id="floors" placeholder="Number of Floors" oninput="calculate()">
+    <input type="number" id="zone" placeholder="Seismic Zone (II-IV)" oninput="calculate()">
+    <input type="number" id="soil" placeholder="Soil Type (1,2,3)" oninput="calculate()">
+  </div>
 
-    <div class="input-group">
-        <label for="length">Length (X-direction) in m:</label>
-        <input type="number" id="length" value="30" oninput="updateOutput()">
-    </div>
+  <div class="result" id="output"></div>
 
-    <div class="input-group">
-        <label for="width">Width (Y-direction) in m:</label>
-        <input type="number" id="width" value="40" oninput="updateOutput()">
-    </div>
-
-    <div class="input-group">
-        <label for="height">Building Height in m:</label>
-        <input type="number" id="height" value="45" oninput="updateOutput()">
-    </div>
-
-    <div class="input-group">
-        <label for="zone">Seismic Zone (II/III/IV/V):</label>
-        <input type="text" id="zone" value="III" oninput="updateOutput()">
-    </div>
-
-    <div class="input-group">
-        <label for="soil">Soil Type (I/II/III):</label>
-        <input type="text" id="soil" value="II" oninput="updateOutput()">
-    </div>
-
-    <div class="output" id="outputBox">
-        <h2>Calculation Steps:</h2>
-        <div id="steps"></div>
-    </div>
 </div>
 
 <script>
-function updateOutput() {
-    const length = parseFloat(document.getElementById('length').value);
-    const width = parseFloat(document.getElementById('width').value);
-    const height = parseFloat(document.getElementById('height').value);
+function calculate() {
+  const l = parseFloat(document.getElementById('length').value) || 0;
+  const w = parseFloat(document.getElementById('width').value) || 0;
+  const h = parseFloat(document.getElementById('height').value) || 0;
+  const f = parseFloat(document.getElementById('floors').value) || 0;
+  const z = parseFloat(document.getElementById('zone').value) || 0;
+  const s = parseFloat(document.getElementById('soil').value) || 0;
 
-    const biX = width;
-    const biY = length;
+  if (l && w && h && f && z && s) {
+    const biX = w; // Perpendicular to X
+    const biY = l; // Perpendicular to Y
 
-    const accEccX = 0.05 * biX;
-    const accEccY = 0.05 * biY;
+    const accX = (0.05 * biX).toFixed(2);
+    const accY = (0.05 * biY).toFixed(2);
 
-    let stepsHTML = `
-        <p><strong>Step 1: Define the Structure</strong></p>
-        <p>Plan Dimensions: ${length}m x ${width}m</p>
-        <p>Height: ${height}m</p>
-
-        <p><strong>Step 2: Accidental Eccentricity</strong></p>
-        <p>X-direction Accidental Eccentricity: ±${accEccX.toFixed(2)}m</p>
-        <p>Y-direction Accidental Eccentricity: ±${accEccY.toFixed(2)}m</p>
-
-        <p><strong>Step 3: Torsional Irregularity Check</strong></p>
-        <p>For detailed displacement analysis, input values to ETABS or relevant software.</p>
-        <p>Compare Δ_max / Δ_avg for each floor:</p>
-        <ul>
-            <li>&lt; 1.2 → Regular</li>
-            <li>1.2 - 1.4 → Torsional Irregularity</li>
-            <li>&gt; 1.4 → Extreme Irregularity</li>
-        </ul>
+    let resultHTML = `
+      <h2>Stepwise Calculation:</h2>
+      <p><strong>Step 1:</strong> Define Structure - Plan = ${l}m x ${w}m, Height = ${h}m, Floors = ${f}</p>
+      <p><strong>Step 2:</strong> Seismic Loading - Zone = ${z}, Soil Type = ${s}</p>
+      <p><strong>Step 3:</strong> Accidental Eccentricity</p>
+      <ul>
+        <li>X-Direction = ±${accX}m</li>
+        <li>Y-Direction = ±${accY}m</li>
+      </ul>
+      <p><strong>Step 4:</strong> Perform Displacement Analysis using structural software.</p>
+      <p><strong>Step 5:</strong> Check for Torsional Irregularity as per IS 1893:2016:</p>
+      <ul>
+        <li>If Displacement Ratio Δ_max / Δ_avg > 1.2 ⇒ <span class="highlight">Torsional Irregularity Exists</span></li>
+        <li>If > 1.4 ⇒ <span class="highlight">Extreme Torsional Irregularity</span></li>
+      </ul>
+      <p><strong>Step 6:</strong> If Irregularity Exists → Perform Dynamic Analysis (Response Spectrum / Time History).</p>
     `;
 
-    document.getElementById('steps').innerHTML = stepsHTML;
+    document.getElementById('output').innerHTML = resultHTML;
+  }
 }
-
-updateOutput();
 </script>
 
 </body>

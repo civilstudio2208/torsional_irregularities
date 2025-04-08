@@ -3,117 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Torsional Irregularity Check - IS 1893:2016</title>
+    <title>Torsional Irregularity Check</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            line-height: 1.6;
         }
-        h1, h2 {
-            color: #2c3e50;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .input-section, .result-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        label {
-            display: inline-block;
-            width: 300px;
-            margin: 10px 0;
-        }
-        input, select {
-            padding: 5px;
-            width: 150px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        .result-section {
-            background-color: #e8f4f8;
-            display: none;
-        }
-        .highlight {
-            font-weight: bold;
-            color: #e74c3c;
+        label, input, button {
+            display: block;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Torsional Irregularity Check - IS 1893:2016</h1>
 
-        <div class="input-section">
-            <h2>Input Parameters</h2>
-            <label>Plan Dimension X (m):</label>
-            <input type="number" id="dimX" value="30" step="0.1"><br>
+<h2>Torsional Irregularity Check as per IS 1893:2016</h2>
 
-            <label>Plan Dimension Y (m):</label>
-            <input type="number" id="dimY" value="40" step="0.1"><br>
+<form id="inputForm">
+    <label>Length in X-direction (m): <input type="number" step="any" id="lengthX" value="30"></label>
+    <label>Length in Y-direction (m): <input type="number" step="any" id="lengthY" value="40"></label>
+    <label>Height (m): <input type="number" step="any" id="height" value="45"></label>
+    <label>Displacement at one end (mm): <input type="number" step="any" id="disp1"></label>
+    <label>Displacement at other end (mm): <input type="number" step="any" id="disp2"></label>
+    <button type="button" onclick="checkIrregularity()">Check Torsional Irregularity</button>
+</form>
 
-            <label>Total Height (m):</label>
-            <input type="number" id="height" value="45" step="0.1"><br>
+<h3 id="result"></h3>
 
-            <label>Number of Stories:</label>
-            <input type="number" id="stories" value="15" step="1"><br>
+<script>
+function checkIrregularity() {
+    const disp1 = parseFloat(document.getElementById('disp1').value);
+    const disp2 = parseFloat(document.getElementById('disp2').value);
 
-            <label>Story Height (m):</label>
-            <input type="number" id="storyHeight" value="3" step="0.1"><br>
+    const deltaMax = Math.max(disp1, disp2);
+    const deltaAvg = (disp1 + disp2) / 2;
+    const ratio = deltaMax / deltaAvg;
 
-            <label>Seismic Zone:</label>
-            <select id="zone">
-                <option value="0.10">Zone II (Z = 0.10)</option>
-                <option value="0.16" selected>Zone III (Z = 0.16)</option>
-                <option value="0.24">Zone IV (Z = 0.24)</option>
-                <option value="0.36">Zone V (Z = 0.36)</option>
-            </select><br>
+    let message = `Δmax = ${deltaMax} mm, Δavg = ${deltaAvg.toFixed(2)} mm, Ratio = ${ratio.toFixed(2)}<br>`;
 
-            <label>Shear Wall 1 Position X (m):</label>
-            <input type="number" id="wall1X" value="6" step="0.1"><br>
+    if (ratio > 1.4) {
+        message += "Result: Extreme Torsional Irregularity Exists (Ratio > 1.4)";
+    } else if (ratio > 1.2) {
+        message += "Result: Torsional Irregularity Exists (Ratio > 1.2)";
+    } else {
+        message += "Result: No Torsional Irregularity (Ratio ≤ 1.2)";
+    }
 
-            <label>Shear Wall 1 Position Y (m):</label>
-            <input type="number" id="wall1Y" value="3" step="0.1"><br>
+    document.getElementById('result').innerHTML = message;
+}
+</script>
 
-            <label>Shear Wall 2 Position X (m):</label>
-            <input type="number" id="wall2X" value="24" step="0.1"><br>
-
-            <label>Shear Wall 2 Position Y (m):</label>
-            <input type="number" id="wall2Y" value="37" step="0.1"><br>
-
-            <label>Shear Wall Length (m):</label>
-            <input type="number" id="wallLength" value="6" step="0.1"><br>
-
-            <label>Shear Wall Thickness (m):</label>
-            <input type="number" id="wallThickness" value="0.3" step="0.01"><br>
-
-            <label>Concrete Modulus of Elasticity (GPa):</label>
-            <input type="number" id="E" value="25" step="1"><br>
-
-            <p><strong>Structural System:</strong> RC Frame with Shear Walls</p>
-
-            <button onclick="calculateTorsion()">Calculate</button>
-        </div>
-
-        <div class="result-section" id="results">
-            <h2>Results</h2>
-            <p>Base Shear (V_B): <span id="baseShear"></span> kN</p>
-            <p>Center of Mass (X, Y): (<span id="cmX"></span>, <span id="cmY"></span>) m</p>
-            <p>Center of Rigidity (X, Y): (<span id="crX"></span>, <span id="crY"></span>) m</p>
-            <p>Static Eccentricity (e_sy): <span id="eccY"></span> m</p>
-            <p>Design Eccentricity (e_dy): <span id="designEcc"></span> m</p>
-            <p>Maximum Displacement (Δ_max): <span id="deltaMax"></span> cm</p>
-            <p>Average Displacement (Δ_avg): <span id="delta
+</body>
+</html>

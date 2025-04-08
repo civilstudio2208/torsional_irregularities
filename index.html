@@ -1,90 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IS 1893:2016 Plan Irregularity Check</title>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #f8f9fa;
-      color: #212529;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 900px;
-      margin: auto;
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-    }
-    h1 {
-      text-align: center;
-      color: #343a40;
-    }
-    label, input {
-      display: block;
-      margin-bottom: 10px;
-    }
-    input[type='number'] {
-      width: 100%;
-      padding: 8px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    .result {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 10px;
-      font-weight: bold;
-      text-align: center;
-      transition: all 0.5s ease;
-    }
-    .pass {
-      background: #d4edda;
-      color: #155724;
-    }
-    .fail {
-      background: #f8d7da;
-      color: #721c24;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan Irregularity Checks - IS 1893:2016</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        header {
+            background: #1a1a2e;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            font-size: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+            display: grid;
+            gap: 2rem;
+        }
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        label, input {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        input {
+            padding: 0.5rem;
+            width: 100%;
+            border-radius: 0.5rem;
+            border: 1px solid #ccc;
+        }
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.5s ease;
+        }
+        .safe {
+            background-color: #c8f7c5;
+            color: #2e7d32;
+        }
+        .fail {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>IS 1893:2016 Plan Irregularity Check</h1>
+    <header>Plan Irregularity Checks - IS 1893:2016</header>
+    <div class="container">
 
-    <label>Displacement Max (mm)</label>
-    <input type="number" id="dispMax" oninput="checkTorsional()">
+        <div class="card">
+            <h2>Torsional Irregularity Check</h2>
+            <label>Max Displacement (mm):</label>
+            <input type="number" id="deltaMax" oninput="checkTorsion()">
+            <label>Average Displacement (mm):</label>
+            <input type="number" id="deltaAvg" oninput="checkTorsion()">
+            <div id="torsionResult" class="result"></div>
+        </div>
 
-    <label>Displacement Avg (mm)</label>
-    <input type="number" id="dispAvg" oninput="checkTorsional()">
+        <div class="card">
+            <h2>Re-entrant Corner Check</h2>
+            <label>Cut Length Ls (m):</label>
+            <input type="number" id="ls" oninput="checkCorner()">
+            <label>Overall Length Lo (m):</label>
+            <input type="number" id="lo" oninput="checkCorner()">
+            <div id="cornerResult" class="result"></div>
+        </div>
 
-    <div id="torsionalResult" class="result">Result will appear here...</div>
-  </div>
+        <!-- Repeat similar structure for other checks -->
 
-  <script>
-    function checkTorsional() {
-      const dispMax = parseFloat(document.getElementById('dispMax').value) || 0;
-      const dispAvg = parseFloat(document.getElementById('dispAvg').value) || 0;
-      const resultDiv = document.getElementById('torsionalResult');
+    </div>
 
-      if (dispMax > 0 && dispAvg > 0) {
-        const ratio = dispMax / dispAvg;
-        if (ratio > 1.2) {
-          resultDiv.textContent = 'Irregular (Fail) → Ratio = ' + ratio.toFixed(2);
-          resultDiv.className = 'result fail';
-        } else {
-          resultDiv.textContent = 'Regular (Safe) → Ratio = ' + ratio.toFixed(2);
-          resultDiv.className = 'result pass';
+    <script>
+        function checkTorsion() {
+            const max = parseFloat(document.getElementById('deltaMax').value);
+            const avg = parseFloat(document.getElementById('deltaAvg').value);
+            const result = document.getElementById('torsionResult');
+
+            if (!isNaN(max) && !isNaN(avg) && avg > 0) {
+                const ratio = max / avg;
+                if (ratio > 1.2) {
+                    result.innerHTML = `Ratio = ${ratio.toFixed(2)} > 1.2 → <b>Irregular (Fail)</b>`;
+                    result.className = 'result fail';
+                } else {
+                    result.innerHTML = `Ratio = ${ratio.toFixed(2)} ≤ 1.2 → <b>Regular (Safe)</b>`;
+                    result.className = 'result safe';
+                }
+            }
         }
-      } else {
-        resultDiv.textContent = 'Result will appear here...';
-        resultDiv.className = 'result';
-      }
-    }
-  </script>
+
+        function checkCorner() {
+            const ls = parseFloat(document.getElementById('ls').value);
+            const lo = parseFloat(document.getElementById('lo').value);
+            const result = document.getElementById('cornerResult');
+
+            if (!isNaN(ls) && !isNaN(lo) && lo > 0) {
+                const ratio = ls / lo;
+                if (ratio > 0.15) {
+                    result.innerHTML = `Ratio = ${ratio.toFixed(3)} > 0.15 → <b>Irregular</b>`;
+                    result.className = 'result fail';
+                } else {
+                    result.innerHTML = `Ratio = ${ratio.toFixed(3)} ≤ 0.15 → <b>Regular</b>`;
+                    result.className = 'result safe';
+                }
+            }
+        }
+    </script>
 </body>
 </html>
